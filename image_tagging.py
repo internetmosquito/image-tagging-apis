@@ -1,64 +1,186 @@
 
-import os
+import os, io
 from os.path import join, dirname
 import yaml
 import json
 import sys
 import zipfile
+import pandas
+import simplejson
+import ntpath
 
 from watson_developer_cloud import VisualRecognitionV3
+from clarifai.client import ClarifaiApi
 
 
-class Main(object):
+class ImageTagger(object):
     """
     A class that gives access to this test application
     """
 
-    #The list of products obtained
-    searched_products = list()
-    products = None
+    VISUAL_RECOGNITION_KEY = ''
+    CLARIFAI_CLIENT_ID = ''
+    CLARIFAI_CLIENT_SECRET = ''
 
     def __init__(self):
-        #Check if we have credentials stored, if so, load them
-        import pdb
-        pdb.set_trace()
-        if os.path.isfile('config.yml'):
-            # LOGGER.info('Getting Amazon credentials from stored file...')
-            self.config = yaml.safe_load(open('config.yml'))
-            VISUAL_RECOGNITION_KEY = self.config['visual-recognition']['api-key']
-            if VISUAL_RECOGNITION_KEY:
-                # LOGGER.info('Got Amazon credentials!')
-                self.visual_recognition = VisualRecognitionV3('2016-05-20', api_key=VISUAL_RECOGNITION_KEY)
-            else:
-                # LOGGER.error('Some mandatory Amazon credentials are empty. Aborting...')
-                sys.exit()
+        self.data_frame = pandas.DataFrame()
+        self.images_names = list()
+        self.apis = ['VisualRecognition', 'Clarifai']
+        self.visual_recognition = None
+        self.clarifai = None
+
+    def configure_tagger(self, config_file):
+        """
+        Reads the API credentials from the specified YAML file and initializes API clients
+        :param config_file: The file path to the config YAML file
+        :return: True if config file was parsed and API clients initialized correctly
+        """
+        #Check if provided config yaml file actually does exist
+        if os.path.isfile(config_file):
+            config = yaml.safe_load(open(config_file))
+            # Get config data
+            self.VISUAL_RECOGNITION_KEY = config['visual-recognition']['api-key']
+            self.CLARIFAI_CLIENT_ID = config['clarifai']['client-id']
+            self.CLARIFAI_CLIENT_SECRET = config['clarifai']['client-secret']
+            if self.VISUAL_RECOGNITION_KEY:
+                self.visual_recognition = VisualRecognitionV3('2016-05-20', api_key=self.VISUAL_RECOGNITION_KEY)
+            if self.CLARIFAI_CLIENT_ID and self.CLARIFAI_CLIENT_SECRET:
+                self.clarifai = ClarifaiApi(app_id=self.CLARIFAI_CLIENT_ID, app_secret=self.CLARIFAI_CLIENT_SECRET)
+            return self.visual_recognition and self.clarifai
         else:
-            # LOGGER.error('Could not find amazon_credentials_file.json file. Aborting...')
-            sys.exit()
+            return False
 
-    def process_images_visual_recognition(self):
-        import pdb
-        pdb.set_trace()
-        # We can send a zip file to Visual Recognition, so let's try
-        zf = zipfile.ZipFile("sample-images.zip", "w")
-        for dirname, subdirs, files in os.walk('sample_images'):
-            for filename in files:
-                if isinstance(filename, str) and filename.endswith(('.jpg', '.png')):
-                    zf.write(os.path.join(dirname, filename), arcname=filename)
-        zf.close()
-        import pdb
-        pdb.set_trace()
-        if self.visual_recognition:
-            with open('sample-images.zip', 'rb') as image_file:
-                results = json.dumps(self.visual_recognition.classify(images_file=image_file,
-                                                                      threshold=0.1), indent=2)
-            if results:
-                print results
+    def process_images_visual_recognition(self, folder_name=None):
+        """
+        Processes the specified image folder using the Visual Recognition API
+        :param folder_name: The complete path where the images are
+        :return: A DataFrame containing the available data
+        """
+        if folder_name:
+            # We can send a zip file to Visual Recognition, so let's try
+            zf = zipfile.ZipFile("sample-images.zip", "w")
+            for dirname, subdirs, files in os.walk(folder_name):
+                for filename in files:
+                    if isinstance(filename, str) and filename.endswith(('.jpg', '.png')):
+                        self.images_names.append(filename)
+                        zf.write(os.path.join(dirname, filename), arcname=filename)
+            zf.close()
+            # Check we have the client API instance
+            if self.visual_recognition:
+                with open('sample-images.zip', 'rb') as image_file:
+                    results = simplejson.dumps(self.visual_recognition.classify(images_file=image_file,
+                                                                                threshold=0.1),
+                                               indent=4,
+                                               skipkeys=True,
+                                               sort_keys=True)
+                    fd = open('visual_recognition_classifications_results.json', 'w')
+                    fd.write(results)
+                    fd.close()
 
-        os.remove('sample-images.zip')
+                # Generate a dict with a list of tuples with all tags found per image
+                vr_results = dict()
+                try:
+                    fd = open('visual_recognition_classifications_results.json', 'r')
+                    vr_data = json.load(fd)
+                    fd.close()
+                    if 'images' in vr_data.keys():
+                        # print(vr_data)
+                        for image in vr_data['images']:
+                            tags_found = []
+                            if 'image' in image.keys():
+                                image_name = self.path_leaf(image['image'])
+                                if 'classifiers' in image.keys():
+                                    for tag in image['classifiers'][0]['classes']:
+                                        if 'class' and 'score' in tag.keys():
+                                            tag_found = (tag['class'], tag['score'])
+                                            tags_found.append(tag_found)
+                                    vr_results[image_name] = tags_found
+
+                        print vr_results
+
+                    # Hm.  this returns unicode keys...
+                    #returndata = simplejson.loads(text)
+                except Exception as ex:
+                    print 'COULD NOT LOAD:', ex
+                data_series = pandas.Series(vr_results, index=self.images_names, name='VisualRecognition')
+                print data_series
+                data_frame = pandas.DataFrame(data_series, index=self.images_names, columns=self.apis)
+                print(data_frame)
+                return data_frame
+            # Removed generated zip file
+            os.remove('sample-images.zip')
+        else:
+            return None
+
+    def process_images_clarifai(self, folder_name=None):
+        """
+        Processes the specified image folder using the Clarifai API
+        :param folder_name: The complete path where the images are
+        :return: A DataFrame containing the available data
+        """
+        if folder_name:
+            # Check we have the client API instance
+            if self.clarifai:
+                # Generate a dict with a list of tuples with all tags found per image
+                clarifai_results = dict()
+                try:
+                    open_files = []
+                    # Generate a dict with a list of tuples with all tags found per image
+                    clarifai_results = dict()
+                    # Build the list of open files to be sent to clarifai
+                    for dirname, subdirs, files in os.walk(folder_name):
+                        for filename in files:
+                            if isinstance(filename, str) and filename.endswith(('.jpg', '.png')):
+                                image_file = open(os.path.join(dirname, filename), 'rb')
+                                image = (image_file, filename)
+                                self.images_names.append(filename)
+                                open_files.append(image)
+                                # Call Clarifai API
+                                clarifai_data = self.clarifai.tag_images(open_files)
+
+                                if 'results' in clarifai_data.keys():
+                                    # print(vr_data)
+                                    for image in clarifai_data['results']:
+                                        tags_found = []
+                                        if 'result' in image.keys():
+                                            image_name = filename
+                                            # Try to get the tags obtained
+                                            result = image['result']
+                                            if result:
+                                                if 'tag' in result.keys():
+                                                    tags = image['result']['tag']['classes']
+                                                    list_tags = []
+                                                    probs = image['result']['tag']['probs']
+                                                    if tags and probs:
+                                                        list_tags = zip(tags, probs)
+                                                        clarifai_results[image_name] = list_tags
+
+                    print clarifai_results
+
+                except Exception as ex:
+                    print 'COULD NOT LOAD:', ex
+                data_series = pandas.Series(clarifai_results, index=self.images_names, name='Clarifai')
+                print data_series
+                data_frame = pandas.DataFrame(data_series, index=self.images_names, columns=self.apis)
+                print(data_frame)
+
+        else:
+            return None
+
+    def path_leaf(self, path):
+        """
+        A simple helper function that returns the last path (the file) of a path
+        :param path: The whole path
+        :return: The filename
+        """
+        head, tail = ntpath.split(path)
+        return tail or ntpath.basename(head)
+
+
 if __name__ == '__main__':
-    app = Main()
-    app.process_images_visual_recognition()
+    app = ImageTagger()
+    #app.process_images_visual_recognition()
+    app.process_images_clarifai(folder_name='sample_images')
 
 
 
