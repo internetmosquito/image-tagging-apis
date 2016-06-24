@@ -89,3 +89,10 @@ ENV/
 .ropeproject
 
 *.json
+
+# YAML config files
+*.yml
+*.yaml
+
+# PyCharm files
+.idea/
