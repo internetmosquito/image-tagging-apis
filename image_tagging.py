@@ -1,9 +1,7 @@
 
-import os, io
-from os.path import join, dirname
+import os
 import yaml
 import json
-import sys
 import zipfile
 import pandas
 import simplejson
@@ -28,6 +26,7 @@ class ImageTagger(object):
         self.apis = ['VisualRecognition', 'Clarifai']
         self.visual_recognition = None
         self.clarifai = None
+        self.configured = False
 
     def configure_tagger(self, config_file):
         """
@@ -46,14 +45,17 @@ class ImageTagger(object):
                 self.visual_recognition = VisualRecognitionV3('2016-05-20', api_key=self.VISUAL_RECOGNITION_KEY)
             if self.CLARIFAI_CLIENT_ID and self.CLARIFAI_CLIENT_SECRET:
                 self.clarifai = ClarifaiApi(app_id=self.CLARIFAI_CLIENT_ID, app_secret=self.CLARIFAI_CLIENT_SECRET)
-            return self.visual_recognition and self.clarifai
+            if self.visual_recognition and self.clarifai:
+                self.configured = True
+
         else:
             return False
 
-    def process_images_visual_recognition(self, folder_name=None):
+    def process_images_visual_recognition(self, folder_name=None, store_results=False):
         """
         Processes the specified image folder using the Visual Recognition API
         :param folder_name: The complete path where the images are
+        :param store_results: Indicates if obtained response should be stored as JSON file
         :return: A DataFrame containing the available data
         """
         if folder_name:
@@ -73,16 +75,15 @@ class ImageTagger(object):
                                                indent=4,
                                                skipkeys=True,
                                                sort_keys=True)
-                    fd = open('visual_recognition_classifications_results.json', 'w')
-                    fd.write(results)
-                    fd.close()
+                    if store_results:
+                        fd = open('visual_recognition_classifications_results.json', 'w')
+                        fd.write(results)
+                        fd.close()
 
                 # Generate a dict with a list of tuples with all tags found per image
                 vr_results = dict()
                 try:
-                    fd = open('visual_recognition_classifications_results.json', 'r')
-                    vr_data = json.load(fd)
-                    fd.close()
+                    vr_data = json.loads(results.decode('string-escape').strip('"'))
                     if 'images' in vr_data.keys():
                         # print(vr_data)
                         for image in vr_data['images']:
@@ -95,20 +96,14 @@ class ImageTagger(object):
                                             tag_found = (tag['class'], tag['score'])
                                             tags_found.append(tag_found)
                                     vr_results[image_name] = tags_found
-
-                        print vr_results
-
-                    # Hm.  this returns unicode keys...
-                    #returndata = simplejson.loads(text)
                 except Exception as ex:
                     print 'COULD NOT LOAD:', ex
                 data_series = pandas.Series(vr_results, index=self.images_names, name='VisualRecognition')
-                print data_series
                 data_frame = pandas.DataFrame(data_series, index=self.images_names, columns=self.apis)
-                print(data_frame)
-                return data_frame
+
             # Removed generated zip file
             os.remove('sample-images.zip')
+            return data_frame
         else:
             return None
 
@@ -154,18 +149,31 @@ class ImageTagger(object):
                                                     if tags and probs:
                                                         list_tags = zip(tags, probs)
                                                         clarifai_results[image_name] = list_tags
-
-                    print clarifai_results
-
                 except Exception as ex:
                     print 'COULD NOT LOAD:', ex
                 data_series = pandas.Series(clarifai_results, index=self.images_names, name='Clarifai')
-                print data_series
                 data_frame = pandas.DataFrame(data_series, index=self.images_names, columns=self.apis)
-                print(data_frame)
+                return data_frame
 
         else:
             return None
+
+    def use_all(self, folder):
+        """
+        :param folder: The folder containing images to be tagged
+        A wrapper that will use all available APIs
+        :return: A DataFrame with all available data
+        """
+        import pdb
+        pdb.set_trace()
+        results = None
+        if self.configured and os.path.isdir(folder):
+            vr_df = self.process_images_visual_recognition(folder)
+            cr_df = self.process_images_clarifai(folder)
+            # Merge both dataframes into one
+            results = pandas.concat(vr_df, cr_df)
+
+        return results
 
     def path_leaf(self, path):
         """
