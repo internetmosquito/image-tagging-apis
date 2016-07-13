@@ -5,6 +5,7 @@ import yaml
 import os
 
 from image_tagging import ImageTagger
+from imagga import ImaggaHelper
 
 
 class ImageTaggerTests(unittest.TestCase):
@@ -17,6 +18,7 @@ class ImageTaggerTests(unittest.TestCase):
     # executed prior to each test
     def setUp(self):
         self.tagger = self.create_tagger()
+        self.imagga_helper = self.create_imagga_helper()
 
     # executed after each test
     def tearDown(self):
@@ -29,9 +31,17 @@ class ImageTaggerTests(unittest.TestCase):
         tagger = ImageTagger()
         return tagger
 
+    def create_imagga_helper(self):
+        imagga = ImaggaHelper()
+        return imagga
+
     def configure_tagger(self, config_file, tagger):
         #Create the required params
         tagger.configure_tagger(config_file)
+
+    def configure_imagga_helper(self, config_file, imagga_helper):
+        #Create the required params
+        imagga_helper.configure_imagga_helper(config_file)
 
     ###############
     #### tests ####
@@ -85,10 +95,39 @@ class ImageTaggerTests(unittest.TestCase):
             fd.close()
             mock_get.return_value = dummy_response
             response = self.tagger.process_images_clarifai('whatever')
-            import pdb
-            pdb.set_trace()
             self.assertIsNotNone(response)
             self.assertTrue(response.empty)
+
+    def test_configured_tagger_returns_data_from_imagga(self):
+        pass
+
+    def test_configured_imagga_wrapper_has_credentials(self):
+        print 'Checking imagga helper has credentials upon configuration'
+        # Configure the mock to return a response with some dummy json response
+        self.configure_imagga_helper(config_file='config.yml', imagga_helper=self.imagga_helper)
+        self.assertIsNotNone(self.imagga_helper.IMAGGA_API_KEY)
+        self.assertIsNotNone(self.imagga_helper.IMAGGA_API_SECRET)
+
+    def test_configured_imagga_wrapper_can_upload_image(self):
+        print 'Checking imagga helper can upload imaga to Imagga'
+        # Configure the mock to return a response with some dummy json response
+        self.configure_imagga_helper(config_file='config.yml', imagga_helper=self.imagga_helper)
+        # Patch the upload_image method so we don't really call it
+        with patch('imagga.ImaggaHelper.upload_image') as mock_get:
+            # Configure the mock to return a response with an OK status code.
+
+            dummy_response = '''{"status": "success", "uploaded":
+                                [{"id": "4598e39043b2f7bbef85a44422fbd824",
+                                "filename": "sea-man-person-surfer.jpg"}]}'''
+            import pdb
+            pdb.set_trace()
+            mock_get.return_value = dummy_response
+            response = self.imagga_helper.upload_image(image_path='whatever')
+            self.assertIsNotNone(response)
+            content_id = json.loads(response)['uploaded'][0]['id']
+            self.assertEqual(content_id, u'4598e39043b2f7bbef85a44422fbd824')
+
+        # self.imagga_helper.upload_image(image_path='sample_images/sea-man-person-surfer.jpg')
 
 
 if __name__ == "__main__":
