@@ -1,6 +1,4 @@
-__author__ = 'internetmosquito'
-# test_meteogalicia_helper.py
-import datetime
+import json
 import unittest
 from mock import Mock, patch
 import yaml
@@ -68,29 +66,27 @@ class ImageTaggerTests(unittest.TestCase):
         self.configure_tagger(config_file='config.yml', tagger=self.tagger)
         with patch('image_tagging.VisualRecognitionV3.classify') as mock_get:
             # Configure the mock to return a response with an OK status code.
-            dummy_response = """{
-                "images": [
-                    {
-                        "classifiers": [
-                            {
-                                "classes": [
-                                    {
-                                        "class": "beach",
-                                        "score": 0.310026,
-                                        "type_hierarchy": "/activities/attractions/beach"
-                                    }
-                                ],
-                                "classifier_id": "default",
-                                "name": "default"
-                            }
-                        ],
-                        "image": "sample-images.zip/pexels-photo_beach_5.jpg"
-                    }
-                ],
-                "images_processed": 1
-            }"""
+            fd = open('fixtures/dummy_vr_result.json', 'r')
+            dummy_response = json.load(fd)
+            fd.close()
             mock_get.return_value = dummy_response
             response = self.tagger.process_images_visual_recognition('whatever', store_results=False)
+            self.assertIsNotNone(response)
+            self.assertTrue(response.empty)
+
+    def test_configured_tagger_returns_data_from_clarifai(self):
+        print 'Checking tagger queries clarifai API'
+        # Configure the mock to return a response with some dummy json response
+        self.configure_tagger(config_file='config.yml', tagger=self.tagger)
+        with patch('image_tagging.ClarifaiApi.tag_images') as mock_get:
+            # Configure the mock to return a response with an OK status code.
+            fd = open('fixtures/dummy_clarifai_result.json', 'r')
+            dummy_response = json.load(fd)
+            fd.close()
+            mock_get.return_value = dummy_response
+            response = self.tagger.process_images_clarifai('whatever')
+            import pdb
+            pdb.set_trace()
             self.assertIsNotNone(response)
             self.assertTrue(response.empty)
 
