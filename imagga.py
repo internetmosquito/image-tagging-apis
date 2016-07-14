@@ -78,6 +78,8 @@ class ImaggaHelper(object):
         # Using the content id and the content parameter,
         # make a GET request to the /tagging endpoint to get
         # image tags
+        import pdb
+        pdb.set_trace()
         tagging_query = {
             'content': image,
             'verbose': verbose,
@@ -86,6 +88,14 @@ class ImaggaHelper(object):
             '%s/tagging' % self.ENDPOINT,
             auth=self.auth,
             params=tagging_query)
+
+        # In case we want to save to file the results with a decent format
+        # with open('results.json', 'w') as out:
+        #    res = json.dump(tagging_response.json(),
+        #                    out,
+        #                    sort_keys=True,
+        #                    indent=4,
+        #                    separators=(',', ': '))
 
         return tagging_response.json()
 

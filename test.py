@@ -119,8 +119,6 @@ class ImageTaggerTests(unittest.TestCase):
             dummy_response = '''{"status": "success", "uploaded":
                                 [{"id": "4598e39043b2f7bbef85a44422fbd824",
                                 "filename": "sea-man-person-surfer.jpg"}]}'''
-            import pdb
-            pdb.set_trace()
             mock_get.return_value = dummy_response
             response = self.imagga_helper.upload_image(image_path='whatever')
             self.assertIsNotNone(response)
@@ -128,6 +126,31 @@ class ImageTaggerTests(unittest.TestCase):
             self.assertEqual(content_id, u'4598e39043b2f7bbef85a44422fbd824')
 
         # self.imagga_helper.upload_image(image_path='sample_images/sea-man-person-surfer.jpg')
+
+    def test_configured_imagga_wrapper_can_tag_image(self):
+        print 'Checking imagga helper can tag Image'
+        # Configure the mock to return a response with some dummy json response
+        self.configure_imagga_helper(config_file='config.yml', imagga_helper=self.imagga_helper)
+        # Patch the upload_image method so we don't really call it
+        with patch('imagga.ImaggaHelper.tag_image') as mock_get:
+            # Configure the mock to return a response with an OK status code.
+            fd = open('fixtures/dummy_imagga_result.json', 'r')
+            import pdb
+            pdb.set_trace()
+            dummy_response = json.load(fd)
+            fd.close()
+            mock_get.return_value = dummy_response
+            response = self.imagga_helper.tag_image('whatever')
+            self.assertIsNotNone(response)
+            self.assertEqual(response['results'][0]['image'], '03204bdaaa3301fb8ce8a4c1e7a1ff17')
+
+
+        # Non mocked testing
+        # results = []
+        # image_file = 'sample_images/sea-man-person-surfer.jpg'
+        # content_id = self.imagga_helper.upload_image(image_path=image_file)
+        # results[image_file] = self.imagga_helper.tag_image(image=content_id, verbose=False)
+        # self.assertIsNotNone(results[image_file])
 
 
 if __name__ == "__main__":
