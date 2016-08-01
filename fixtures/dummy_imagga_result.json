@@ -1,0 +1,322 @@
+{
+    "results": [
+        {
+            "image": "03204bdaaa3301fb8ce8a4c1e7a1ff17",
+            "tagging_id": null,
+            "tags": [
+                {
+                    "confidence": 47.334216868878194,
+                    "origin": "recognition",
+                    "synset_id": "n04273569",
+                    "tag": "boat"
+                },
+                {
+                    "confidence": 37.46126574729781,
+                    "origin": "recognition",
+                    "synset_id": "n04273569",
+                    "tag": "speedboat"
+                },
+                {
+                    "confidence": 33.185199773166,
+                    "origin": "additional",
+                    "tag": "sea"
+                },
+                {
+                    "confidence": 32.943337606269495,
+                    "origin": "recognition",
+                    "synset_id": "n04273569",
+                    "tag": "motorboat"
+                },
+                {
+                    "confidence": 29.688361556161528,
+                    "origin": "additional",
+                    "tag": "water"
+                },
+                {
+                    "confidence": 26.75798528192967,
+                    "origin": "recognition",
+                    "synset_id": "n00445055",
+                    "tag": "surfing"
+                },
+                {
+                    "confidence": 25.040943656954813,
+                    "origin": "additional",
+                    "tag": "ocean"
+                },
+                {
+                    "confidence": 23.351385866376482,
+                    "origin": "recognition",
+                    "synset_id": "n04273569",
+                    "tag": "vessel"
+                },
+                {
+                    "confidence": 19.782052419973258,
+                    "origin": "additional",
+                    "tag": "travel"
+                },
+                {
+                    "confidence": 19.479220229309057,
+                    "origin": "additional",
+                    "tag": "sky"
+                },
+                {
+                    "confidence": 19.403960030531085,
+                    "origin": "additional",
+                    "tag": "beach"
+                },
+                {
+                    "confidence": 19.053474339114466,
+                    "origin": "additional",
+                    "tag": "summer"
+                },
+                {
+                    "confidence": 18.917644902713892,
+                    "origin": "additional",
+                    "tag": "landscape"
+                },
+                {
+                    "confidence": 18.73268265477204,
+                    "origin": "recognition",
+                    "synset_id": "n04228054",
+                    "tag": "ski"
+                },
+                {
+                    "confidence": 16.567298915044855,
+                    "origin": "additional",
+                    "tag": "horizon"
+                },
+                {
+                    "confidence": 16.316345450473985,
+                    "origin": "recognition",
+                    "synset_id": "n04252077",
+                    "tag": "snowmobile"
+                },
+                {
+                    "confidence": 14.530430085017247,
+                    "origin": "recognition",
+                    "synset_id": "n03364340",
+                    "tag": "float"
+                },
+                {
+                    "confidence": 14.205651258039463,
+                    "origin": "additional",
+                    "tag": "outdoor"
+                },
+                {
+                    "confidence": 13.612053556155834,
+                    "origin": "recognition",
+                    "synset_id": "n00523513",
+                    "tag": "sport"
+                },
+                {
+                    "confidence": 13.495497141070198,
+                    "origin": "additional",
+                    "tag": "lake"
+                },
+                {
+                    "confidence": 13.056000000000001,
+                    "origin": "recognition",
+                    "synset_id": "n04252077",
+                    "tag": "tracked vehicle"
+                },
+                {
+                    "confidence": 12.921793704090897,
+                    "origin": "additional",
+                    "tag": "sun"
+                },
+                {
+                    "confidence": 12.064164336277559,
+                    "origin": "additional",
+                    "tag": "vacation"
+                },
+                {
+                    "confidence": 12.033209776222519,
+                    "origin": "additional",
+                    "tag": "outdoors"
+                },
+                {
+                    "confidence": 11.896288995446753,
+                    "origin": "additional",
+                    "tag": "coastline"
+                },
+                {
+                    "confidence": 11.838801952792032,
+                    "origin": "additional",
+                    "tag": "leisure"
+                },
+                {
+                    "confidence": 11.66827120968387,
+                    "origin": "additional",
+                    "tag": "holiday"
+                },
+                {
+                    "confidence": 11.261426574270208,
+                    "origin": "additional",
+                    "tag": "reflection"
+                },
+                {
+                    "confidence": 11.055217939548104,
+                    "origin": "additional",
+                    "tag": "sand"
+                },
+                {
+                    "confidence": 10.899550032531579,
+                    "origin": "additional",
+                    "tag": "wave"
+                },
+                {
+                    "confidence": 10.828036953907448,
+                    "origin": "additional",
+                    "tag": "island"
+                },
+                {
+                    "confidence": 10.478754012231452,
+                    "origin": "additional",
+                    "tag": "day"
+                },
+                {
+                    "confidence": 10.025339689857947,
+                    "origin": "recognition",
+                    "synset_id": "n04273569",
+                    "tag": "craft"
+                },
+                {
+                    "confidence": 9.978690375628469,
+                    "origin": "additional",
+                    "tag": "people"
+                },
+                {
+                    "confidence": 9.917648595645911,
+                    "origin": "additional",
+                    "tag": "coast"
+                },
+                {
+                    "confidence": 9.600356284300592,
+                    "origin": "additional",
+                    "tag": "tourism"
+                },
+                {
+                    "confidence": 9.209783144181959,
+                    "origin": "additional",
+                    "tag": "ship"
+                },
+                {
+                    "confidence": 9.115821481198667,
+                    "origin": "additional",
+                    "tag": "mountain"
+                },
+                {
+                    "confidence": 8.744246929800694,
+                    "origin": "additional",
+                    "tag": "yacht"
+                },
+                {
+                    "confidence": 8.738097710064894,
+                    "origin": "additional",
+                    "tag": "tranquil"
+                },
+                {
+                    "confidence": 8.7298363728368,
+                    "origin": "additional",
+                    "tag": "tropical"
+                },
+                {
+                    "confidence": 8.67465372567549,
+                    "origin": "additional",
+                    "tag": "clouds"
+                },
+                {
+                    "confidence": 8.58969482529854,
+                    "origin": "recognition",
+                    "synset_id": "n00449295",
+                    "tag": "racing"
+                },
+                {
+                    "confidence": 8.544358752769195,
+                    "origin": "additional",
+                    "tag": "seascape"
+                },
+                {
+                    "confidence": 8.421142173879439,
+                    "origin": "additional",
+                    "tag": "scenic"
+                },
+                {
+                    "confidence": 8.341654198819771,
+                    "origin": "additional",
+                    "tag": "shore"
+                },
+                {
+                    "confidence": 8.312433593053159,
+                    "origin": "additional",
+                    "tag": "resort"
+                },
+                {
+                    "confidence": 7.980179308716445,
+                    "origin": "additional",
+                    "tag": "sailing"
+                },
+                {
+                    "confidence": 7.704364992315733,
+                    "origin": "additional",
+                    "tag": "fun"
+                },
+                {
+                    "confidence": 7.64687621081792,
+                    "origin": "additional",
+                    "tag": "scene"
+                },
+                {
+                    "confidence": 7.457704464024564,
+                    "origin": "additional",
+                    "tag": "calm"
+                },
+                {
+                    "confidence": 7.412054097956441,
+                    "origin": "additional",
+                    "tag": "relaxation"
+                },
+                {
+                    "confidence": 7.271617070394094,
+                    "origin": "additional",
+                    "tag": "cruise"
+                },
+                {
+                    "confidence": 7.268260249735336,
+                    "origin": "additional",
+                    "tag": "motor"
+                },
+                {
+                    "confidence": 7.23409542042671,
+                    "origin": "additional",
+                    "tag": "fishing"
+                },
+                {
+                    "confidence": 7.2181456536082385,
+                    "origin": "additional",
+                    "tag": "sunlight"
+                },
+                {
+                    "confidence": 7.216210073423018,
+                    "origin": "additional",
+                    "tag": "snow"
+                },
+                {
+                    "confidence": 7.184945486344721,
+                    "origin": "additional",
+                    "tag": "river"
+                },
+                {
+                    "confidence": 7.116525965127269,
+                    "origin": "additional",
+                    "tag": "lifestyle"
+                },
+                {
+                    "confidence": 7.015892212702763,
+                    "origin": "additional",
+                    "tag": "sunny"
+                }
+            ]
+        }
+    ]
+}

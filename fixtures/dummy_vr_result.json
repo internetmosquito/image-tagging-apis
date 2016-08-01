@@ -1,0 +1,21 @@
+{
+    "images": [
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "beach",
+                            "score": 0.310026,
+                            "type_hierarchy": "/activities/attractions/beach"
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/pexels-photo_beach_5.jpg"
+        }
+    ],
+    "images_processed": 1
+}

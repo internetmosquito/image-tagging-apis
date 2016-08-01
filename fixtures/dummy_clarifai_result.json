@@ -1,0 +1,90 @@
+{
+    "meta": {
+        "tag": {
+            "config": "34fb1111b4d5f67cf1b8665ebc603704",
+            "model": "general-v1.3",
+            "timestamp": 1466627130.310727
+        }
+    },
+    "results": [
+        {
+            "docid": 232315892313731393912992855076632574259,
+            "docid_str": "aec669d1b9b38c55b03e163d0700b933",
+            "local_id": "",
+            "result": {
+                "tag": {
+                    "classes": [
+                        "landscape",
+                        "nature",
+                        "sunset",
+                        "sky",
+                        "outdoors",
+                        "travel",
+                        "beach",
+                        "girl",
+                        "water",
+                        "people",
+                        "field",
+                        "grass",
+                        "summer",
+                        "sand",
+                        "child",
+                        "sun",
+                        "fair weather",
+                        "dune",
+                        "leisure",
+                        "daylight"
+                    ],
+                    "concept_ids": [
+                        "ai_MTvKbKJv",
+                        "ai_tBcWlsCp",
+                        "ai_XNxf76KN",
+                        "ai_lNsKfmXb",
+                        "ai_Zmhsv0Ch",
+                        "ai_VRmbGVWh",
+                        "ai_J1hw9SFJ",
+                        "ai_xQbBc1zb",
+                        "ai_BlL0wSQh",
+                        "ai_l8TKp2h5",
+                        "ai_W1zlPRs1",
+                        "ai_mp9KG5QH",
+                        "ai_FsT0Zqdb",
+                        "ai_DSCFH6f6",
+                        "ai_qcLd7fgc",
+                        "ai_1d4Qk7Nr",
+                        "ai_41s912fX",
+                        "ai_MZgNZrxR",
+                        "ai_V1FjkFXr",
+                        "ai_ZrPNDjxN"
+                    ],
+                    "probs": [
+                        0.981404185295105,
+                        0.9675103425979614,
+                        0.9651747941970825,
+                        0.958451509475708,
+                        0.9512045383453369,
+                        0.9496251344680786,
+                        0.9369943141937256,
+                        0.9268287420272827,
+                        0.9241539835929871,
+                        0.9039735794067383,
+                        0.9019153714179993,
+                        0.8941524028778076,
+                        0.8938383460044861,
+                        0.876345157623291,
+                        0.8731662034988403,
+                        0.8708087801933289,
+                        0.8692415952682495,
+                        0.8570355176925659,
+                        0.8482176661491394,
+                        0.8374013900756836
+                    ]
+                }
+            },
+            "status_code": "OK",
+            "status_msg": "OK"
+        }
+    ],
+    "status_code": "OK",
+    "status_msg": "All images in request have completed successfully. "
+}
