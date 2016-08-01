@@ -88,9 +88,5 @@ ENV/
 # Rope project settings
 .ropeproject
 
-# YAML config files
-*.yml
-*.yaml
-
 # PyCharm files
 .idea/
