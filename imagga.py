@@ -24,11 +24,11 @@ class ImaggaHelper(object):
         :param config_file: The file path to the config YAML file
         :return: True if config file was parsed and API clients initialized correctly
         """
-        #Check if provided config yaml file actually does exist
+        # Check if provided config yaml file actually does exist
         if os.path.isfile(config_file):
             config = yaml.safe_load(open(config_file))
             # Get config data
-            self.IMAGGA_API_KEY= config['imagga']['api-key']
+            self.IMAGGA_API_KEY = config['imagga']['api-key']
             self.IMAGGA_API_SECRET = config['imagga']['api-secret']
             if self.IMAGGA_API_KEY and self.IMAGGA_API_KEY:
                 self.auth = HTTPBasicAuth(self.IMAGGA_API_KEY, self.IMAGGA_API_SECRET)
@@ -78,8 +78,6 @@ class ImaggaHelper(object):
         # Using the content id and the content parameter,
         # make a GET request to the /tagging endpoint to get
         # image tags
-        import pdb
-        pdb.set_trace()
         tagging_query = {
             'content': image,
             'verbose': verbose,
@@ -99,10 +97,31 @@ class ImaggaHelper(object):
 
         return tagging_response.json()
 
+    def process_folder(self, folder_path):
+        """
+        Iterates over the images found in the specified path and calls Imagga API for each image
+        :param folder_path: The full path of the folder to extract and process images from
+        :param verbose: If true it includes the origin of the tagging procedure
+        :return: The JSON response from the tagging call
+        """
+        # Using the content id and the content parameter,
+        # make a GET request to the /tagging endpoint to get
+        # image tags
+        tagging_query = {
+            'content': image,
+            'verbose': verbose,
+        }
+        tagging_response = requests.get(
+            '%s/tagging' % self.ENDPOINT,
+            auth=self.auth,
+            params=tagging_query)
 
+        # In case we want to save to file the results with a decent format
+        # with open('results.json', 'w') as out:
+        #    res = json.dump(tagging_response.json(),
+        #                    out,
+        #                    sort_keys=True,
+        #                    indent=4,
+        #                    separators=(',', ': '))
 
-
-
-
-
-
+        return tagging_response.json()

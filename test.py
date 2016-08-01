@@ -88,15 +88,18 @@ class ImageTaggerTests(unittest.TestCase):
         print 'Checking tagger queries clarifai API'
         # Configure the mock to return a response with some dummy json response
         self.configure_tagger(config_file='config.yml', tagger=self.tagger)
-        with patch('image_tagging.ClarifaiApi.tag_images') as mock_get:
+        # Patch the actual code that clarifai client uses
+        with patch('clarifai.client.mime_util.post_multipart_request') as mock_get:
             # Configure the mock to return a response with an OK status code.
             fd = open('fixtures/dummy_clarifai_result.json', 'r')
-            dummy_response = json.load(fd)
+            # Read as string
+            dummy_response = fd.read()
             fd.close()
             mock_get.return_value = dummy_response
-            response = self.tagger.process_images_clarifai('whatever')
+            response = self.tagger.process_images_clarifai(folder_name='sample_images')
             self.assertIsNotNone(response)
-            self.assertTrue(response.empty)
+            # Check returned DataFrame has 16 rows, as expected
+            self.assertEqual(16, len(response.index))
 
     def test_configured_tagger_returns_data_from_imagga(self):
         pass
@@ -135,23 +138,12 @@ class ImageTaggerTests(unittest.TestCase):
         with patch('imagga.ImaggaHelper.tag_image') as mock_get:
             # Configure the mock to return a response with an OK status code.
             fd = open('fixtures/dummy_imagga_result.json', 'r')
-            import pdb
-            pdb.set_trace()
             dummy_response = json.load(fd)
             fd.close()
             mock_get.return_value = dummy_response
             response = self.imagga_helper.tag_image('whatever')
             self.assertIsNotNone(response)
             self.assertEqual(response['results'][0]['image'], '03204bdaaa3301fb8ce8a4c1e7a1ff17')
-
-
-        # Non mocked testing
-        # results = []
-        # image_file = 'sample_images/sea-man-person-surfer.jpg'
-        # content_id = self.imagga_helper.upload_image(image_path=image_file)
-        # results[image_file] = self.imagga_helper.tag_image(image=content_id, verbose=False)
-        # self.assertIsNotNone(results[image_file])
-
 
 if __name__ == "__main__":
     unittest.main()

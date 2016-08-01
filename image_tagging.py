@@ -164,8 +164,6 @@ class ImageTagger(object):
         A wrapper that will use all available APIs
         :return: A DataFrame with all available data
         """
-        import pdb
-        pdb.set_trace()
         results = None
         if self.configured and os.path.isdir(folder):
             vr_df = self.process_images_visual_recognition(folder)
