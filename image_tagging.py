@@ -49,6 +49,7 @@ class ImageTagger(object):
                 self.configured = True
 
         else:
+            print('Could not find config file')
             return False
 
     def process_images_visual_recognition(self, folder_name=None, store_results=False):
