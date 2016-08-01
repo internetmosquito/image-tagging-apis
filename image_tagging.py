@@ -44,6 +44,8 @@ class ImageTagger(object):
             if self.VISUAL_RECOGNITION_KEY:
                 self.visual_recognition = VisualRecognitionV3('2016-05-20', api_key=self.VISUAL_RECOGNITION_KEY)
             if self.CLARIFAI_CLIENT_ID and self.CLARIFAI_CLIENT_SECRET:
+                print self.CLARIFAI_CLIENT_ID
+                print self.CLARIFAI_CLIENT_SECRET
                 self.clarifai = ClarifaiApi(app_id=self.CLARIFAI_CLIENT_ID, app_secret=self.CLARIFAI_CLIENT_SECRET)
             if self.visual_recognition and self.clarifai:
                 self.configured = True
