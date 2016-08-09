@@ -6,6 +6,15 @@ import zipfile
 import pandas
 import simplejson
 import ntpath
+import base64
+import time
+
+from httplib2 import HttpLib2Error
+
+from googleapiclient import discovery
+from googleapiclient.errors import HttpError
+
+from oauth2client.client import GoogleCredentials
 
 from watson_developer_cloud import VisualRecognitionV3
 from clarifai.client import ClarifaiApi
@@ -19,6 +28,8 @@ class ImageTagger(object):
     VISUAL_RECOGNITION_KEY = ''
     CLARIFAI_CLIENT_ID = ''
     CLARIFAI_CLIENT_SECRET = ''
+    GOOGLE_VISION_DISCOVERY_URL='https://{api}.googleapis.com/$discovery/rest?version={apiVersion}'
+    GOOGLE_FILE_TYPES = ['png', 'jpg', 'jpeg', 'gif']
 
     def __init__(self):
         self.data_frame = pandas.DataFrame()
@@ -26,6 +37,7 @@ class ImageTagger(object):
         self.apis = ['VisualRecognition', 'Clarifai']
         self.visual_recognition = None
         self.clarifai = None
+        self.google_vision_service = None
         self.configured = False
 
     def configure_tagger(self, config_file):
@@ -41,13 +53,19 @@ class ImageTagger(object):
             self.VISUAL_RECOGNITION_KEY = config['visual-recognition']['api-key']
             self.CLARIFAI_CLIENT_ID = config['clarifai']['client-id']
             self.CLARIFAI_CLIENT_SECRET = config['clarifai']['client-secret']
+            self.GOOGLE_VISION_SECRET = config['google-vision']['api-key']
             if self.VISUAL_RECOGNITION_KEY:
                 self.visual_recognition = VisualRecognitionV3('2016-05-20', api_key=self.VISUAL_RECOGNITION_KEY)
             if self.CLARIFAI_CLIENT_ID and self.CLARIFAI_CLIENT_SECRET:
-                print self.CLARIFAI_CLIENT_ID
-                print self.CLARIFAI_CLIENT_SECRET
                 self.clarifai = ClarifaiApi(app_id=self.CLARIFAI_CLIENT_ID, app_secret=self.CLARIFAI_CLIENT_SECRET)
-            if self.visual_recognition and self.clarifai:
+            if self.GOOGLE_VISION_SECRET:
+                self.google_vision_service = discovery.build('vision',
+                                                             'v1',
+                                                             developerKey=self.GOOGLE_VISION_SECRET,
+                                                             discoveryServiceUrl=self.GOOGLE_VISION_DISCOVERY_URL
+                                                             )
+
+            if self.visual_recognition and self.clarifai and self.google_vision_service:
                 self.configured = True
 
         else:
@@ -153,13 +171,116 @@ class ImageTagger(object):
                                                         list_tags = zip(tags, probs)
                                                         clarifai_results[image_name] = list_tags
                 except Exception as ex:
-                    print 'COULD NOT LOAD:', ex
+                    print ('COULD NOT LOAD, reason {0}'.format(str(ex)))
                 data_series = pandas.Series(clarifai_results, index=self.images_names, name='Clarifai')
                 data_frame = pandas.DataFrame(data_series, index=self.images_names, columns=self.apis)
                 return data_frame
 
         else:
             return None
+
+    def process_images_google_vision(self, folder_name=None):
+        """
+        Iterates over the specified folder and returns the combined response from calling Google Cloud Vision API
+        using only LABEL detection and 5 maximum per image. Since it looks like Google does not like sending more
+        than 10 images per Request, we have to make sure we process every batch of 10 images until finished
+        :param folder_name: The full path to the folder with images to be processed
+        :return: A dict containing the response from Google plus some key-value added to easily identify what
+                 image belongs to what Google returns, because otherwise is really hard to map the response to the
+                 correspondent image in the folder, e.g:
+                 {
+                    'responses': [
+                        [{
+                            'sample_images/pexels-photo_beach_5.jpg': {
+                                u 'labelAnnotations': [{
+                                    u 'score': 0.93736339, u 'mid': u '/m/01g317', u 'description': u 'person'
+                                }, {
+                                    u 'score': 0.83638608, u 'mid': u '/m/07p82rh', u 'description': u 'human action'
+                                }, {
+                                    u 'score': 0.79835832, u 'mid': u '/m/01lxd', u 'description': u 'coast'
+                                }, {
+                                    u 'score': 0.78364617, u 'mid': u '/m/083mg', u 'description': u 'walking'
+                                }]
+                            }
+                        }]]
+                }
+        """
+        responses = []
+        # Check if specified folder exists
+        if os.path.isdir(folder_name):
+            # Get the images if the exist and if they are in the supported types
+            images = [filename for filename in os.listdir(folder_name)
+                      if os.path.isfile(os.path.join(folder_name, filename)) and
+                      filename.split('.')[-1].lower() in self.GOOGLE_FILE_TYPES]
+
+            payload = {}
+            payload['requests'] = []
+            # Create a list to associate responses with images
+            images_names = list()
+            for iterator, image_file in enumerate(images):
+                image_path = os.path.join(folder_name, image_file)
+                images_names.append(image_path)
+                with open(image_path, 'rb') as image:
+                    image_content = base64.b64encode(image.read())
+                    image_payload = {}
+                    image_payload['image'] = {}
+                    image_payload['image']['content'] = image_content.decode('UTF-8')
+                    image_payload['features'] = [{
+                                'type': 'LABEL_DETECTION',
+                                'maxResults': 5
+                    }]
+                    payload['requests'].append(image_payload)
+
+                    # Need to check if we have reached 10 images, meaning we must send a request,
+                    # Google does not like more than 10 images (more or less) per request
+                    if (iterator + 1) % 10 == 0:
+                        service_request = self.google_vision_service.images().annotate(body=payload)
+                        payload = {}
+                        payload['requests'] = []
+                        try:
+                            response = service_request.execute()
+                            import pdb
+                            pdb.set_trace()
+                            intermediate = response['responses']
+                            merged = zip(images_names, intermediate)
+                            response['responses'] = []
+                            for element in merged:
+                                image_labeled = {}
+                                image_labeled[element[0]] = element[1]
+                                response['responses'].append(image_labeled)
+                            responses.append(response)
+                            images_names = list()
+                            # Add one second delay before making another request
+                            time.sleep(5)
+                        except (HttpError, HttpLib2Error) as ex:
+                            print('The following error occurred trying to label images with Google {0}'.format(str(ex)))
+                            continue
+
+            # This is just in case images were less than 10 or the remaining of more than any multiple of 10
+            service_request = self.google_vision_service.images().annotate(body=payload)
+            try:
+                response = service_request.execute()
+                intermediate = response['responses']
+                merged = zip(images_names, intermediate)
+                response['responses'] = []
+                for element in merged:
+                    image_labeled = dict()
+                    image_labeled[element[0]] = element[1]
+                    response['responses'].append(image_labeled)
+                responses.append(response)
+            except (HttpError, HttpLib2Error) as ex:
+                print('The following error occurred trying to label images with Google {0}'.format(str(ex)))
+
+            finally:
+                # Iterate the responses and construct one single dictionary with one response key only
+                final_response = dict()
+                final_response['responses'] = []
+                for partial in responses:
+                    labels = partial['responses']
+                    final_response['responses'].append(labels)
+                return final_response
+        else:
+            raise ValueError('The input directory does not exist: %s' % folder_name)
 
     def use_all(self, folder):
         """

@@ -1,7 +1,9 @@
 import os
 import yaml
+import json
 import requests
 from requests.auth import HTTPBasicAuth
+from simplejson import JSONDecodeError
 
 
 class ImaggaHelper(object):
@@ -13,6 +15,7 @@ class ImaggaHelper(object):
     IMAGGA_API_KEY = ''
     IMAGGA_API_SECRET = ''
     ENDPOINT = 'https://api.imagga.com/v1'
+    IMAGGA_FILE_TYPES = ['png', 'jpg', 'jpeg', 'gif']
 
     def __init__(self):
         self.auth = None
@@ -44,7 +47,7 @@ class ImaggaHelper(object):
         :return: The content ID associated with the uploaded image
         """
         if not os.path.isfile(image_path):
-            raise ValueError('Provided image path is invalidad, cannot upload to Imagga')
+            raise ValueError('Provided image path is invalid, cannot upload to Imagga')
 
         # Open the desired file
         with open(image_path, 'rb') as image_file:
@@ -61,7 +64,12 @@ class ImaggaHelper(object):
             # {'status': 'success',
             #  'uploaded': [{'id': '8aa6e7f083c628407895eb55320ac5ad',
             #                'filename': 'example_image.jpg'}]}
-            uploaded_files = content_response.json()['uploaded']
+            try:
+                uploaded_files = content_response.json()['uploaded']
+            except JSONDecodeError:
+                import pdb
+                pdb.set_trace()
+                return None
 
             # Get the content id of the uploaded file
             content_id = uploaded_files[0]['id']
@@ -97,31 +105,38 @@ class ImaggaHelper(object):
 
         return tagging_response.json()
 
-    def process_folder(self, folder_path):
+    def tag_folder(self, folder_path):
         """
         Iterates over the images found in the specified path and calls Imagga API for each image
         :param folder_path: The full path of the folder to extract and process images from
         :param verbose: If true it includes the origin of the tagging procedure
         :return: The JSON response from the tagging call
         """
-        # Using the content id and the content parameter,
-        # make a GET request to the /tagging endpoint to get
-        # image tags
-        tagging_query = {
-            'content': image,
-            'verbose': verbose,
-        }
-        tagging_response = requests.get(
-            '%s/tagging' % self.ENDPOINT,
-            auth=self.auth,
-            params=tagging_query)
+        import pdb
+        pdb.set_trace()
+        results = {}
+        # Check if specified folder exists
+        if os.path.isdir(folder_path):
+            # Get the images if the exist and if they are in the supported types
+            images = [filename for filename in os.listdir(folder_path)
+                      if os.path.isfile(os.path.join(folder_path, filename)) and
+                      filename.split('.')[-1].lower() in self.IMAGGA_FILE_TYPES]
 
-        # In case we want to save to file the results with a decent format
-        # with open('results.json', 'w') as out:
-        #    res = json.dump(tagging_response.json(),
-        #                    out,
-        #                    sort_keys=True,
-        #                    indent=4,
-        #                    separators=(',', ': '))
+            images_count = len(images)
+            for iterator, image_file in enumerate(images):
+                image_path = os.path.join(folder_path, image_file)
+                print('[%s / %s] %s uploading' %
+                      (iterator + 1, images_count, image_path))
 
-        return tagging_response.json()
+                content_id = self.upload_image(image_path)
+                if content_id:
+                    tag_result = self.tag_image(content_id, True)
+                    results[image_file] = tag_result
+                    print('[%s / %s] %s tagged' %
+                          (iterator + 1, images_count, image_path))
+        else:
+            raise ValueError('The input directory does not exist: %s' % folder_path)
+        import pdb
+        pdb.set_trace()
+        response = json.dumps(results, ensure_ascii=False, indent=4).encode('utf-8')
+        return response

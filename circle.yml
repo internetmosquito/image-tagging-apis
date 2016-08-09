@@ -2,4 +2,6 @@ dependencies:
   pre:
     # update locally with:
     # openssl aes-256-cbc -e -in secret-env-plain -out secret-env-cipher -k $KEY
+    # This command deciphers the input config-cipher filed and moves it to config.yml with the
+    # CircleCI environment variable KEY so tests can pass
     - openssl aes-256-cbc -d -in config-cipher -k $KEY >> config.yml

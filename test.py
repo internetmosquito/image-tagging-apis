@@ -9,31 +9,6 @@ from image_tagging import ImageTagger
 from imagga import ImaggaHelper
 
 
-def mocked_requests_post(*args, **kwargs):
-        """
-        Used to mock the post response from uploading images to Imagga
-        :param args:
-        :param kwargs:
-        :return:
-        """
-        class MockResponse:
-            def __init__(self, json_data, status_code):
-                self.json_data = json_data
-                self.status_code = status_code
-
-            def json(self):
-                return self.json_data
-
-        if args[0] == 'https://api.imagga.com/v1/content':
-            # Get the filename tried to uploaded
-            response = {"status": "success",
-                        "uploaded": [{"id": "4598e39043b2f7bbef85a44422fbd824",
-                                       "filename": "sea-man-person-surfer.jpg"}]}
-            return MockResponse(response, 200)
-
-        return MockResponse({}, 404)
-
-
 class ImageTaggerTests(unittest.TestCase):
 
     ############################
@@ -69,6 +44,35 @@ class ImageTaggerTests(unittest.TestCase):
         #Create the required params
         imagga_helper.configure_imagga_helper(config_file)
 
+    def mocked_requests(*args, **kwargs):
+        """
+        Used to mock the post response from uploading images to Imagga
+        :param args: The URL for the request
+        :param kwargs:  Any extra params, typically the image to be uploaded
+        :return: A mocked dictionary
+        """
+        class MockResponse:
+            def __init__(self, json_data, status_code):
+                self.json_data = json_data
+                self.status_code = status_code
+
+            def json(self):
+                return self.json_data
+
+        if args[0] == 'https://api.imagga.com/v1/content':
+            # Get the filename tried to uploaded
+            response = {"status": "success",
+                        "uploaded": [{"id": "4598e39043b2f7bbef85a44422fbd824",
+                                       "filename": "sea-man-person-surfer.jpg"}]}
+            return MockResponse(response, 200)
+        elif args[0] == 'https://api.imagga.com/v1/tagging':
+            # Get the filename tried to uploaded
+            fd = open('fixtures/dummy_imagga_result.json', 'r')
+            dummy_response = json.load(fd)
+            fd.close()
+            return MockResponse(dummy_response, 200)
+
+        return MockResponse({}, 404)
 
 
     ###############
@@ -85,6 +89,13 @@ class ImageTaggerTests(unittest.TestCase):
             'clarifai': {
                 'client-id': '',
                 'client-secret': ''
+            },
+            'imagga': {
+                'api-key': '',
+                'api-secret': ''
+            },
+            'google-vision': {
+                'api-key': ''
             }
         }
         with open('dummy_config.yml', 'w') as yaml_file:
@@ -112,6 +123,7 @@ class ImageTaggerTests(unittest.TestCase):
             self.assertIsNotNone(response)
             self.assertTrue(response.empty)
 
+    @unittest.skip("Skipping until mocked")
     def test_configured_tagger_returns_data_from_clarifai(self):
         print 'Checking tagger queries clarifai API'
         # Configure the mock to return a response with some dummy json response
@@ -129,9 +141,6 @@ class ImageTaggerTests(unittest.TestCase):
             # Check returned DataFrame has 16 rows, as expected
             self.assertEqual(16, len(response.index))
 
-    def test_configured_tagger_returns_data_from_imagga(self):
-        pass
-
     def test_configured_imagga_wrapper_has_credentials(self):
         print 'Checking imagga helper has credentials upon configuration'
         # Configure the mock to return a response with some dummy json response
@@ -139,37 +148,44 @@ class ImageTaggerTests(unittest.TestCase):
         self.assertIsNotNone(self.imagga_helper.IMAGGA_API_KEY)
         self.assertIsNotNone(self.imagga_helper.IMAGGA_API_SECRET)
 
-    @mock.patch('imagga.requests.post', side_effect=mocked_requests_post)
+    @mock.patch('imagga.requests.post', side_effect=mocked_requests)
     def test_configured_imagga_wrapper_can_upload_image(self, mock_post):
         print 'Checking imagga helper can upload imaga to Imagga'
         # Configure the mock to return a response with some dummy json response
         self.configure_imagga_helper(config_file='config.yml', imagga_helper=self.imagga_helper)
-        # Patch the upload_image method so we don't really call it
-        #with patch('imagga.requests.post', side_effect=mocked_requests_post) as mock_get:
-            # Configure the mock to return a response with an OK status code.
-
-            # dummy_response = '''{"status": "success", "uploaded":
-            #                     [{"id": "4598e39043b2f7bbef85a44422fbd824",
-            #                     "filename": "sea-man-person-surfer.jpg"}]}'''
-        # mock_get.return_value = dummy_response
         response = self.imagga_helper.upload_image(image_path='sample_images/sea-man-person-surfer.jpg')
         self.assertIsNotNone(response)
         self.assertEqual(response, u'4598e39043b2f7bbef85a44422fbd824')
 
-    def test_configured_imagga_wrapper_can_tag_image(self):
+    @mock.patch('imagga.requests.get', side_effect=mocked_requests)
+    def test_configured_imagga_wrapper_can_tag_image(self, mock_post):
         print 'Checking imagga helper can tag Image'
         # Configure the mock to return a response with some dummy json response
         self.configure_imagga_helper(config_file='config.yml', imagga_helper=self.imagga_helper)
-        # Patch the upload_image method so we don't really call it
-        with patch('imagga.ImaggaHelper.tag_image') as mock_get:
-            # Configure the mock to return a response with an OK status code.
-            fd = open('fixtures/dummy_imagga_result.json', 'r')
-            dummy_response = json.load(fd)
-            fd.close()
-            mock_get.return_value = dummy_response
-            response = self.imagga_helper.tag_image('whatever')
-            self.assertIsNotNone(response)
-            self.assertEqual(response['results'][0]['image'], '03204bdaaa3301fb8ce8a4c1e7a1ff17')
+        response = self.imagga_helper.tag_image(image='4598e39043b2f7bbef85a44422fbd824')
+        self.assertIsNotNone(response)
+        self.assertIn('results', response)
+        self.assertEqual('03204bdaaa3301fb8ce8a4c1e7a1ff17', response['results'][0]['image'])
+
+    # @mock.patch('imagga.requests.get', side_effect=mocked_requests)
+    @unittest.skip("Skipping until mocked")
+    def test_configured_imagga_wrapper_can_tag_folder(self, mock_post):
+        print 'Checking imagga helper can tag a folder with images'
+        # Configure the mock to return a response with some dummy json response
+        self.configure_imagga_helper(config_file='config.yml', imagga_helper=self.imagga_helper)
+        ci = self.imagga_helper.upload_image(image_path='sample_images/sea-man-person-surfer.jpg')
+        if ci:
+            response = self.imagga_helper.tag_image(image=ci)
+        response = self.imagga_helper.tag_folder(folder_path='sample_images')
+        self.assertIsNotNone(response)
+
+    @unittest.skip("Skipping until mocked")
+    def test_configured_google_service_can_tag_folder(self):
+        print 'Checking Google Vision can label a folder with images'
+        # Configure the mock to return a response with some dummy json response
+        self.configure_tagger(config_file='config.yml', tagger=self.tagger)
+        response = self.tagger.process_images_google_vision(folder_name='sample_images')
+        self.assertIsNotNone(response)
 
 if __name__ == "__main__":
     unittest.main()
