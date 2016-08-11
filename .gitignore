@@ -35,7 +35,7 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Secrets file
-.config.yml
+config.yml
 
 # Unit test / coverage reports
 htmlcov/

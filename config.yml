@@ -1,8 +1,0 @@
-visual-recognition:
-    api-key: ${VR_API_KEY}
-clarifai:
-    client-id: ${CLARIFAI_CLIENT_ID}
-    client-secret: ${CLARIFAI_CLIENT_SECRET}
-imagga:
-    api-key: ${IMAGGA_API_KEY}
-    api-secret: ${IMAGGA_API_SECRET}
