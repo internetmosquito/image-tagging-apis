@@ -239,8 +239,6 @@ class ImageTagger(object):
                         payload['requests'] = []
                         try:
                             response = service_request.execute()
-                            import pdb
-                            pdb.set_trace()
                             intermediate = response['responses']
                             merged = zip(images_names, intermediate)
                             response['responses'] = []

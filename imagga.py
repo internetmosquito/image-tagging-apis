@@ -67,8 +67,7 @@ class ImaggaHelper(object):
             try:
                 uploaded_files = content_response.json()['uploaded']
             except JSONDecodeError:
-                import pdb
-                pdb.set_trace()
+                import pudb; pudb.set_trace()
                 return None
 
             # Get the content id of the uploaded file
@@ -112,8 +111,6 @@ class ImaggaHelper(object):
         :param verbose: If true it includes the origin of the tagging procedure
         :return: The JSON response from the tagging call
         """
-        import pdb
-        pdb.set_trace()
         results = {}
         # Check if specified folder exists
         if os.path.isdir(folder_path):
@@ -136,7 +133,5 @@ class ImaggaHelper(object):
                           (iterator + 1, images_count, image_path))
         else:
             raise ValueError('The input directory does not exist: %s' % folder_path)
-        import pdb
-        pdb.set_trace()
         response = json.dumps(results, ensure_ascii=False, indent=4).encode('utf-8')
         return response
