@@ -15,7 +15,552 @@
                 }
             ],
             "image": "sample-images.zip/pexels-photo_beach_5.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "surf",
+                            "score": 0.937027,
+                            "type_hierarchy": "/activities/sports/surf"
+                        },
+                        {
+                            "class": "wave",
+                            "score": 0.845535
+                        },
+                        {
+                            "class": "sea",
+                            "score": 0.574443,
+                            "type_hierarchy": "/activities/services/sea"
+                        },
+                        {
+                            "class": "beach",
+                            "score": 0.524979,
+                            "type_hierarchy": "/activities/attractions/beach"
+                        },
+                        {
+                            "class": "surfing",
+                            "score": 0.377541,
+                            "type_hierarchy": "/activities/water sports/surfing"
+                        },
+                        {
+                            "class": "water",
+                            "score": 0.310026,
+                            "type_hierarchy": "/products/services/resources/materials/liquids/water"
+                        },
+                        {
+                            "class": "surfer",
+                            "score": 0.268941
+                        },
+                        {
+                            "class": "cloud",
+                            "score": 0.268941,
+                            "type_hierarchy": "/elements/textures/cloud"
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/pexels-photo_beach_2.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "surf",
+                            "score": 0.99593,
+                            "type_hierarchy": "/activities/sports/surf"
+                        },
+                        {
+                            "class": "wave",
+                            "score": 0.668188
+                        },
+                        {
+                            "class": "surfer",
+                            "score": 0.475021
+                        },
+                        {
+                            "class": "surfing",
+                            "score": 0.450166,
+                            "type_hierarchy": "/activities/water sports/surfing"
+                        },
+                        {
+                            "class": "water",
+                            "score": 0.425557,
+                            "type_hierarchy": "/products/services/resources/materials/liquids/water"
+                        },
+                        {
+                            "class": "beach",
+                            "score": 0.425557,
+                            "type_hierarchy": "/activities/attractions/beach"
+                        },
+                        {
+                            "class": "ocean",
+                            "score": 0.377541,
+                            "type_hierarchy": "/parts/bodies/ocean"
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/pexels-photo_beach_1.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "sun",
+                            "score": 0.999925,
+                            "type_hierarchy": "/products/elements/planets/stars/sun"
+                        },
+                        {
+                            "class": "sunset",
+                            "score": 0.999254,
+                            "type_hierarchy": "/shooting modes/scene modes/sunset"
+                        },
+                        {
+                            "class": "beach",
+                            "score": 0.869892,
+                            "type_hierarchy": "/activities/attractions/beach"
+                        },
+                        {
+                            "class": "sea",
+                            "score": 0.5,
+                            "type_hierarchy": "/activities/services/sea"
+                        },
+                        {
+                            "class": "water",
+                            "score": 0.331812,
+                            "type_hierarchy": "/products/services/resources/materials/liquids/water"
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/sea-sunset-surfer-orange.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "vehicle",
+                            "score": 0.952574,
+                            "type_hierarchy": "/vehicles"
+                        },
+                        {
+                            "class": "water",
+                            "score": 0.845535,
+                            "type_hierarchy": "/products/services/resources/materials/liquids/water"
+                        },
+                        {
+                            "class": "boat",
+                            "score": 0.768525,
+                            "type_hierarchy": "/vehicles/boat"
+                        },
+                        {
+                            "class": "surf",
+                            "score": 0.689974,
+                            "type_hierarchy": "/activities/sports/surf"
+                        },
+                        {
+                            "class": "sport",
+                            "score": 0.689974,
+                            "type_hierarchy": "/activities/sport"
+                        },
+                        {
+                            "class": "jetski",
+                            "score": 0.268941,
+                            "type_hierarchy": "/activities/water sports/jetski"
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/sea-man-person-surfer.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "sun",
+                            "score": 0.999917,
+                            "type_hierarchy": "/products/elements/planets/stars/sun"
+                        },
+                        {
+                            "class": "sunset",
+                            "score": 0.99593,
+                            "type_hierarchy": "/shooting modes/scene modes/sunset"
+                        },
+                        {
+                            "class": "beach",
+                            "score": 0.908877,
+                            "type_hierarchy": "/activities/attractions/beach"
+                        },
+                        {
+                            "class": "sunrise",
+                            "score": 0.668188
+                        },
+                        {
+                            "class": "sea",
+                            "score": 0.475021,
+                            "type_hierarchy": "/activities/services/sea"
+                        },
+                        {
+                            "class": "ocean",
+                            "score": 0.354344,
+                            "type_hierarchy": "/parts/bodies/ocean"
+                        },
+                        {
+                            "class": "nature",
+                            "score": 0.354344,
+                            "type_hierarchy": "/activities/events/details/features/factors/nature"
+                        },
+                        {
+                            "class": "sand",
+                            "score": 0.310026,
+                            "type_hierarchy": "/products/materials/sand"
+                        },
+                        {
+                            "class": "sky",
+                            "score": 0.268941,
+                            "type_hierarchy": "/companies/sky"
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/pexels-photo_beach_3.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "beach",
+                            "score": 0.996316,
+                            "type_hierarchy": "/activities/attractions/beach"
+                        },
+                        {
+                            "class": "nature",
+                            "score": 0.622459,
+                            "type_hierarchy": "/activities/events/details/features/factors/nature"
+                        },
+                        {
+                            "class": "sand",
+                            "score": 0.574443,
+                            "type_hierarchy": "/products/materials/sand"
+                        },
+                        {
+                            "class": "sea",
+                            "score": 0.549834,
+                            "type_hierarchy": "/activities/services/sea"
+                        },
+                        {
+                            "class": "ocean",
+                            "score": 0.377541,
+                            "type_hierarchy": "/parts/bodies/ocean"
+                        },
+                        {
+                            "class": "wave",
+                            "score": 0.331812
+                        },
+                        {
+                            "class": "sunset",
+                            "score": 0.28905,
+                            "type_hierarchy": "/shooting modes/scene modes/sunset"
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/pexels-photo-24091.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "person",
+                            "score": 0.978119,
+                            "type_hierarchy": "/people"
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/man-person-suit-united-states-of-america.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "rain",
+                            "score": 0.401312,
+                            "type_hierarchy": "/components/elements/rain"
+                        },
+                        {
+                            "class": "night",
+                            "score": 0.401312,
+                            "type_hierarchy": "/times/night"
+                        },
+                        {
+                            "class": "sport",
+                            "score": 0.354344,
+                            "type_hierarchy": "/activities/sport"
+                        },
+                        {
+                            "class": "light",
+                            "score": 0.354344,
+                            "type_hierarchy": "/accessories/light"
+                        },
+                        {
+                            "class": "street",
+                            "score": 0.28905,
+                            "type_hierarchy": "/places/street"
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/pexels-photo-24597.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "animal",
+                            "score": 0.999986,
+                            "type_hierarchy": "/animals"
+                        },
+                        {
+                            "class": "mammal",
+                            "score": 0.999966,
+                            "type_hierarchy": "/animals/mammal"
+                        },
+                        {
+                            "class": "cat",
+                            "score": 0.994514,
+                            "type_hierarchy": "/animals/pets/cat"
+                        },
+                        {
+                            "class": "kitten",
+                            "score": 0.916827,
+                            "type_hierarchy": "/animals/pets/kitten"
+                        },
+                        {
+                            "class": "pet",
+                            "score": 0.354344,
+                            "type_hierarchy": "/animals/pet"
+                        },
+                        {
+                            "class": "kitty",
+                            "score": 0.310026,
+                            "type_hierarchy": "/animals/pets/critters/kitty"
+                        },
+                        {
+                            "class": "tabby",
+                            "score": 0.28905,
+                            "type_hierarchy": "/colors/tabby"
+                        },
+                        {
+                            "class": "feline",
+                            "score": 0.268941,
+                            "type_hierarchy": "/animals/feline"
+                        },
+                        {
+                            "class": "cute",
+                            "score": 0.268941
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/pexels-photo-25453.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "pier",
+                            "score": 0.832018
+                        },
+                        {
+                            "class": "beach",
+                            "score": 0.817574,
+                            "type_hierarchy": "/activities/attractions/beach"
+                        },
+                        {
+                            "class": "sea",
+                            "score": 0.710949,
+                            "type_hierarchy": "/activities/services/sea"
+                        },
+                        {
+                            "class": "ocean",
+                            "score": 0.574443,
+                            "type_hierarchy": "/parts/bodies/ocean"
+                        },
+                        {
+                            "class": "water",
+                            "score": 0.549834,
+                            "type_hierarchy": "/products/services/resources/materials/liquids/water"
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/jetty-landing-stage-surfer-pier.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "vehicle",
+                            "score": 0.998341,
+                            "type_hierarchy": "/vehicles"
+                        },
+                        {
+                            "class": "truck",
+                            "score": 0.985226,
+                            "type_hierarchy": "/vehicles/truck"
+                        },
+                        {
+                            "class": "car",
+                            "score": 0.377541,
+                            "type_hierarchy": "/vehicles/car"
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/beach-holiday-clouds-lifeguard.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "beach",
+                            "score": 0.524979,
+                            "type_hierarchy": "/activities/attractions/beach"
+                        },
+                        {
+                            "class": "person",
+                            "score": 0.354344,
+                            "type_hierarchy": "/people"
+                        },
+                        {
+                            "class": "bikini",
+                            "score": 0.310026,
+                            "type_hierarchy": "/accessories/outfits/bikini"
+                        },
+                        {
+                            "class": "girl",
+                            "score": 0.28905,
+                            "type_hierarchy": "/people/children/girl"
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/sea-sunny-beach-holiday.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "water",
+                            "score": 0.622459,
+                            "type_hierarchy": "/products/services/resources/materials/liquids/water"
+                        },
+                        {
+                            "class": "boat",
+                            "score": 0.524979,
+                            "type_hierarchy": "/vehicles/boat"
+                        },
+                        {
+                            "class": "sea",
+                            "score": 0.425557,
+                            "type_hierarchy": "/activities/services/sea"
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/pexels-photo-7778.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [
+                        {
+                            "class": "beach",
+                            "score": 0.900249,
+                            "type_hierarchy": "/activities/attractions/beach"
+                        },
+                        {
+                            "class": "kite",
+                            "score": 0.845535
+                        },
+                        {
+                            "class": "sport",
+                            "score": 0.450166,
+                            "type_hierarchy": "/activities/sport"
+                        },
+                        {
+                            "class": "sea",
+                            "score": 0.450166,
+                            "type_hierarchy": "/activities/services/sea"
+                        },
+                        {
+                            "class": "summer",
+                            "score": 0.354344,
+                            "type_hierarchy": "/people/summer"
+                        },
+                        {
+                            "class": "nature",
+                            "score": 0.310026,
+                            "type_hierarchy": "/activities/events/details/features/factors/nature"
+                        }
+                    ],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/pexels-photo_beach_4.jpg"
+        },
+        {
+            "classifiers": [
+                {
+                    "classes": [],
+                    "classifier_id": "default",
+                    "name": "default"
+                }
+            ],
+            "image": "sample-images.zip/pexels-photo-26890.jpg"
         }
     ],
-    "images_processed": 1
+    "images_processed": 16
 }

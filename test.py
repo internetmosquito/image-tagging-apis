@@ -143,8 +143,8 @@ class ImageTaggerTests(unittest.TestCase):
             mock_get.return_value = dummy_response
             response = self.tagger.process_images_clarifai(folder_name='sample_images')
             self.assertIsNotNone(response)
-            # Check returned DataFrame has 16 rows, as expected
-            self.assertEqual(16, len(response.index))
+            # Check returned DataFrame has 25 rows, as expected
+            self.assertEqual(25, len(response.index))
 
     def test_configured_imagga_wrapper_has_credentials(self):
         print 'Checking imagga helper has credentials upon configuration'
@@ -185,21 +185,36 @@ class ImageTaggerTests(unittest.TestCase):
             mock_get.return_value = dummy_response
             response = self.imagga_helper.tag_folder(folder_name='whatever')
             self.assertIsNotNone(response)
-            # Check returned DataFrame has 16 rows, as expected
             self.assertEqual(25, len(response.keys()))
 
+    def test_configured_imagga_wrapper_can_process_images(self):
+        print 'Checking imagga helper can process images'
+        # Configure the mock to return a response with some dummy json response
+        self.configure_imagga_helper(config_file='config.yml', imagga_helper=self.imagga_helper)
+        with patch('imagga.ImaggaHelper.tag_folder') as mock_get:
+            # Configure the mock to return a response with an OK status code.
+            fd = open('fixtures/dummy_imagga_total_results.json', 'r')
+            # Read as string
+            dummy_response = json.load(fd)
+            fd.close()
+            mock_get.return_value = dummy_response
+            response = self.imagga_helper.tag_folder(folder_name='whatever')
+            self.assertIsNotNone(response)
+            # Check returned DataFrame has 16 rows, as expected
+            self.assertEqual(25, len(response.keys()))
+            # Call process images
+            processed_images = self.imagga_helper.process_images(folder_name='whatever')
+            # Check returned DataFrame has 16 rows, as expected
+            self.assertEqual(25, len(processed_images.index))
+
     @mock.patch('googleapiclient.http.HttpRequest.execute', side_effect=google_mocked_list)
-    def test_configured_google_service_can_tag_folder(self, mock_post):
+    def test_configured_google_service_can_process_images(self, mock_post):
         print 'Checking Google Vision can label a folder with images'
         # Configure the mock to return a response with some dummy json response
         self.configure_tagger(config_file='config.yml', tagger=self.tagger)
         response = self.tagger.process_images_google_vision(folder_name='sample_images')
         self.assertIsNotNone(response)
-        self.assertEqual(len(response['responses']), 3)
-        total_images_labeled = len(response['responses'][0]) + \
-                               len(response['responses'][1]) + \
-                               len(response['responses'][2])
-        self.assertEqual(total_images_labeled, 25)
+        self.assertEqual(25, len(response.index))
 
 if __name__ == "__main__":
     unittest.main()

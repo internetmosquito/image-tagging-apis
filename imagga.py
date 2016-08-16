@@ -2,6 +2,7 @@ import os
 import yaml
 import json
 import requests
+import pandas
 from requests.auth import HTTPBasicAuth
 from simplejson import JSONDecodeError
 
@@ -20,6 +21,8 @@ class ImaggaHelper(object):
     def __init__(self):
         self.auth = None
         self.configured = False
+        self.api = ['Imagga']
+        self.images_names = list()
 
     def configure_imagga_helper(self, config_file):
         """
@@ -135,3 +138,77 @@ class ImaggaHelper(object):
             raise ValueError('The input directory does not exist: %s' % folder_path)
         response = json.dumps(results, ensure_ascii=False, indent=4).encode('utf-8')
         return response
+
+    def tag_folder(self, folder_path):
+        """
+        Iterates over the images found in the specified path and calls Imagga API for each image
+        :param folder_path: The full path of the folder to extract and process images from
+        :param verbose: If true it includes the origin of the tagging procedure
+        :return: The JSON response from the tagging call
+        """
+        results = {}
+        # Check if specified folder exists
+        if os.path.isdir(folder_path):
+            # Get the images if the exist and if they are in the supported types
+            images = [filename for filename in os.listdir(folder_path)
+                      if os.path.isfile(os.path.join(folder_path, filename)) and
+                      filename.split('.')[-1].lower() in self.IMAGGA_FILE_TYPES]
+
+            images_count = len(images)
+            for iterator, image_file in enumerate(images):
+                image_path = os.path.join(folder_path, image_file)
+                print('[%s / %s] %s uploading' %
+                      (iterator + 1, images_count, image_path))
+
+                content_id = self.upload_image(image_path)
+                if content_id:
+                    tag_result = self.tag_image(content_id, True)
+                    results[image_file] = tag_result
+                    print('[%s / %s] %s tagged' %
+                          (iterator + 1, images_count, image_path))
+        else:
+            raise ValueError('The input directory does not exist: %s' % folder_path)
+        response = json.dumps(results, ensure_ascii=False, indent=4).encode('utf-8')
+        return response
+
+    def process_images(self, folder_name):
+        """
+        Processes the specified image folder using the Imagga API
+        :param folder_name: The complete path where the images are
+        :return: A DataFrame containing the available data
+        """
+        data_frame = None
+        # Check we have the client API instance
+        if self.configured:
+            # Generate a dict with a list of tuples with all tags found per image
+            try:
+                # Generate a dict with a list of tuples with all tags found per image
+                intermediate_results = dict()
+                try:
+                    intermediate_results = self.tag_folder(folder_path=folder_name)
+                except:
+                    print('Could process any image from specified folder using Imagga API')
+                    return None
+
+                imagga_results = dict()
+                for image_name, contents in sorted(intermediate_results.iteritems()):
+                    tags_found = []
+                    self.images_names.append(image_name)
+                    if 'results' in contents.keys():
+                        # Try to get the tags obtained
+                        results = contents['results']
+                        if results:
+                            for tags in results:
+                                # Get the tags for this image
+                                labels = tags['tags']
+                                for label in labels:
+                                    tag_found = (label['tag'], label['confidence'])
+                                    tags_found.append(tag_found)
+                                    imagga_results[image_name] = tags_found
+            except Exception as ex:
+                print ('COULD NOT LOAD, reason {0}'.format(str(ex)))
+            data_series = pandas.Series(imagga_results, index=self.images_names, name='Imagga')
+            data_frame = pandas.DataFrame(data_series, index=self.images_names, columns=self.api)
+            return data_frame
+
+        return data_frame
