@@ -16,8 +16,9 @@ from googleapiclient.errors import HttpError
 
 from oauth2client.client import GoogleCredentials
 
-from watson_developer_cloud import VisualRecognitionV3
+from watson_developer_cloud import VisualRecognitionV3, WatsonException
 from clarifai.client import ClarifaiApi
+from imagga import ImaggaHelper
 
 
 class ImageTagger(object):
@@ -34,14 +35,16 @@ class ImageTagger(object):
     GOOGLE_VISION_DISCOVERY_URL='https://{api}.googleapis.com/$discovery/rest?version={apiVersion}'
     IMAGE_FILE_TYPES = ['png', 'jpg', 'jpeg', 'gif']
 
-    def __init__(self):
+    def __init__(self, imagga_helper=None):
         self.data_frame = pandas.DataFrame()
         self.images_names = list()
-        self.apis = ['VisualRecognition', 'Clarifai', 'GoogleVision']
+        self.apis = ['VisualRecognition', 'Clarifai', 'Imagga', 'GoogleVision']
         self.visual_recognition = None
         self.clarifai = None
         self.google_vision_service = None
         self.configured = False
+        if imagga_helper:
+            self.imagga_helper = imagga_helper
 
     def configure_tagger(self, config_file):
         """
@@ -83,27 +86,31 @@ class ImageTagger(object):
         :return: A DataFrame containing the available data
         """
         data_frame = None
+        self.images_names = list()
         # We can send a zip file to Visual Recognition, so let's try
         zf = zipfile.ZipFile("sample-images.zip", "w")
         for dirname, subdirs, files in os.walk(folder_name):
             for filename in files:
-                if isinstance(filename, str) and filename.endswith(('.jpg', '.png')):
+                if isinstance(filename, str) and filename.endswith(('.jpeg', '.jpg', '.png')):
                     self.images_names.append(filename)
                     zf.write(os.path.join(dirname, filename), arcname=filename)
         zf.close()
         # Check we have the client API instance
         if self.visual_recognition:
             with open('sample-images.zip', 'rb') as image_file:
-                results = simplejson.dumps(self.visual_recognition.classify(images_file=image_file,
-                                                                            threshold=0.1),
-                                           indent=4,
-                                           skipkeys=True,
-                                           sort_keys=True)
+                try:
+                    results = simplejson.dumps(self.visual_recognition.classify(images_file=image_file,
+                                                                                threshold=0.1),
+                                               indent=4,
+                                               skipkeys=True,
+                                               sort_keys=True)
+                except WatsonException as ex:
+                    print('An error occured trying to get data from VisualReconginitio. More info {0}'.format(str(ex)))
+                    return data_frame
                 if store_results:
                     fd = open('visual_recognition_classifications_results.json', 'w')
                     fd.write(results)
                     fd.close()
-
             # Generate a dict with a list of tuples with all tags found per image
             vr_results = dict()
             try:
@@ -123,7 +130,7 @@ class ImageTagger(object):
             except Exception as ex:
                 print 'COULD NOT LOAD:', ex
             data_series = pandas.Series(vr_results, index=self.images_names, name='VisualRecognition')
-            data_frame = pandas.DataFrame(data_series, index=self.images_names, columns=self.apis)
+            data_frame = pandas.DataFrame(data_series, index=self.images_names, columns=['VisualRecognition'])
 
         # Removed generated zip file
         os.remove('sample-images.zip')
@@ -144,41 +151,44 @@ class ImageTagger(object):
                 open_files = []
                 # Generate a dict with a list of tuples with all tags found per image
                 clarifai_results = dict()
-
+                self.images_names = list()
                 if os.path.isdir(folder_name):
                     # Get the images if the exist and if they are in the supported types
                     images = [filename for filename in os.listdir(folder_name)
                               if os.path.isfile(os.path.join(folder_name, filename)) and
                               filename.split('.')[-1].lower() in self.IMAGE_FILE_TYPES]
+
                     for iterator, image_file in enumerate(images):
                         image_path = os.path.join(folder_name, image_file)
                         self.images_names.append(self.path_leaf(image_path))
                         image_file = open(image_path, 'rb')
                         image = (image_file, self.path_leaf(image_path))
                         open_files.append(image)
-                        # Call Clarifai API
-                        clarifai_data = self.clarifai.tag_images(open_files)
 
-                        if 'results' in clarifai_data.keys():
-                            # print(vr_data)
-                            for image in clarifai_data['results']:
-                                tags_found = []
-                                if 'result' in image.keys():
-                                    image_name = filename
-                                    # Try to get the tags obtained
-                                    result = image['result']
-                                    if result:
-                                        if 'tag' in result.keys():
-                                            tags = image['result']['tag']['classes']
-                                            list_tags = []
-                                            probs = image['result']['tag']['probs']
-                                            if tags and probs:
-                                                list_tags = zip(tags, probs)
-                                                clarifai_results[image_name] = list_tags
+                    # Call Clarifai API
+                    clarifai_data = self.clarifai.tag_images(open_files)
+
+                    if 'results' in clarifai_data.keys():
+                        # print(vr_data)
+                        for iterator, image in enumerate(clarifai_data['results']):
+                            tags_found = []
+                            if 'result' in image.keys():
+                                image_name = self.images_names[iterator]
+                                # Try to get the tags obtained
+                                result = image['result']
+                                if result:
+                                    if 'tag' in result.keys():
+                                        tags = image['result']['tag']['classes']
+                                        list_tags = []
+                                        probs = image['result']['tag']['probs']
+                                        if tags and probs:
+                                            list_tags = zip(tags, probs)
+                                            clarifai_results[image_name] = list_tags
             except Exception as ex:
                 print ('COULD NOT LOAD, reason {0}'.format(str(ex)))
-            data_series = pandas.Series(clarifai_results, index=self.images_names, name='Clarifai')
-            data_frame = pandas.DataFrame(data_series, index=self.images_names, columns=self.apis)
+            sorted_names = sorted(self.images_names)
+            data_series = pandas.Series(clarifai_results, index=sorted_names, name='Clarifai')
+            data_frame = pandas.DataFrame(data_series, index=sorted_names, columns=['Clarifai'])
             return data_frame
 
     def process_images_google_vision(self, folder_name=None):
@@ -191,6 +201,7 @@ class ImageTagger(object):
         """
         data_frame = None
         responses = []
+        self.images_names = list()
         # Check if specified folder exists
         if os.path.isdir(folder_name):
             # Get the images if the exist and if they are in the supported types
@@ -275,8 +286,9 @@ class ImageTagger(object):
                             tags_found.append(tag_found)
                         google_results[image_tagged.keys()[0]] = tags_found
 
-                data_series = pandas.Series(google_results, index=self.images_names, name='GoogleVision')
-                data_frame = pandas.DataFrame(data_series, index=self.images_names, columns=self.apis)
+                sorted_names = sorted(self.images_names)
+                data_series = pandas.Series(google_results, index=sorted_names, name='GoogleVision')
+                data_frame = pandas.DataFrame(data_series, index=sorted_names, columns=['GoogleVision'])
                 return data_frame
 
         else:
@@ -292,8 +304,11 @@ class ImageTagger(object):
         if self.configured and os.path.isdir(folder):
             vr_df = self.process_images_visual_recognition(folder)
             cr_df = self.process_images_clarifai(folder)
+            im_df = self.imagga_helper.process_images(folder)
+            gv_df = self.process_images_google_vision(folder)
             # Merge both dataframes into one
-            results = pandas.concat(vr_df, cr_df)
+            data_frames = [vr_df, cr_df, im_df, gv_df]
+            results = pandas.concat(data_frames, axis=1)
 
         return results
 
@@ -308,9 +323,12 @@ class ImageTagger(object):
 
 
 if __name__ == '__main__':
-    app = ImageTagger()
-    #app.process_images_visual_recognition()
-    app.process_images_clarifai(folder_name='sample_images')
+    imagga_tagger = ImaggaHelper()
+    imagga_tagger.configure_imagga_helper(config_file='config.yml')
+    app = ImageTagger(imagga_helper=imagga_tagger)
+    app.configure_tagger(config_file='config.yml')
+    tagged = app.use_all('sample_images')
+    print tagged
 
 
 

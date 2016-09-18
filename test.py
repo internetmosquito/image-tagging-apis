@@ -4,6 +4,7 @@ import mock
 from mock import Mock, patch
 import yaml
 import os
+import pandas
 
 from image_tagging import ImageTagger
 from imagga import ImaggaHelper
@@ -21,6 +22,8 @@ class ImageTaggerTests(unittest.TestCase):
     google_mocked_list = [google_vision_mocked_response_one,
                           google_vision_mocked_response_two,
                           google_vision_mocked_response_three]
+    # Indicates if all tests must be executed
+    RUN_ALL_TESTS = False
 
     # executed prior to each test
     def setUp(self):
@@ -195,19 +198,18 @@ class ImageTaggerTests(unittest.TestCase):
             # Configure the mock to return a response with an OK status code.
             fd = open('fixtures/dummy_imagga_total_results.json', 'r')
             # Read as string
-            dummy_response = json.load(fd)
+            dummy_response = fd.read()
             fd.close()
             mock_get.return_value = dummy_response
             response = self.imagga_helper.tag_folder(folder_name='whatever')
             self.assertIsNotNone(response)
-            # Check returned DataFrame has 16 rows, as expected
-            self.assertEqual(25, len(response.keys()))
             # Call process images
             processed_images = self.imagga_helper.process_images(folder_name='whatever')
             # Check returned DataFrame has 16 rows, as expected
             self.assertEqual(25, len(processed_images.index))
 
-    @mock.patch('googleapiclient.http.HttpRequest.execute', side_effect=google_mocked_list)
+    # @mock.patch('googleapiclient.http.HttpRequest.execute', side_effect=google_mocked_list)
+    @unittest.skipUnless(RUN_ALL_TESTS, "All tests flag is not True")
     def test_configured_google_service_can_process_images(self, mock_post):
         print 'Checking Google Vision can label a folder with images'
         # Configure the mock to return a response with some dummy json response
@@ -215,6 +217,67 @@ class ImageTaggerTests(unittest.TestCase):
         response = self.tagger.process_images_google_vision(folder_name='sample_images')
         self.assertIsNotNone(response)
         self.assertEqual(25, len(response.index))
+
+    def test_all_apis_return_data(self):
+        print 'Checking DataFrames return data'
+        data_frame_imagga = None
+        data_frame_google = None
+        data_frame_clarifai = None
+        data_frame_visual_recognition = None
+
+        # Get data from Imagga
+        with patch('imagga.ImaggaHelper.tag_folder') as mock_get:
+            self.configure_imagga_helper(config_file='config.yml', imagga_helper=self.imagga_helper)
+            # Configure the mock to return a response with an OK status code.
+            fd = open('fixtures/dummy_imagga_total_results.json', 'r')
+            # Read as string
+            dummy_response = json.load(fd)
+            fd.close()
+            imagga_json_str = json.dumps(dummy_response, ensure_ascii=False, indent=4).encode('utf-8')
+            mock_get.return_value = imagga_json_str
+            # Call process images
+            data_frame_imagga = self.imagga_helper.process_images(folder_name='whatever')
+            # Check returned DataFrame has 16 rows, as expected
+            self.assertEqual(25, len(data_frame_imagga.index))
+
+        # Get data from Google
+        self.configure_tagger(config_file='config.yml', tagger=self.tagger)
+        with patch('googleapiclient.http.HttpRequest.execute', side_effect=ImageTaggerTests.google_mocked_list) as mock_get:
+            data_frame_google = self.tagger.process_images_google_vision(folder_name='sample_images')
+            self.assertIsNotNone(data_frame_google)
+            self.assertEqual(25, len(data_frame_google.index))
+
+        # Get data from clarifai
+        with patch('clarifai.client.mime_util.post_multipart_request') as mock_get:
+            # Configure the mock to return a response with an OK status code.
+            fd = open('fixtures/dummy_clarifai_result.json', 'r')
+            # Read as string
+            dummy_response = fd.read()
+            fd.close()
+            mock_get.return_value = dummy_response
+            data_frame_clarifai = self.tagger.process_images_clarifai(folder_name='sample_images')
+            self.assertIsNotNone(data_frame_clarifai)
+            # Check returned DataFrame has 25 rows, as expected
+            self.assertEqual(25, len(data_frame_clarifai.index))
+
+        # Get data from visual_recognition
+        with patch('image_tagging.VisualRecognitionV3.classify') as mock_get:
+            # Configure the mock to return a response with an OK status code.
+            fd = open('fixtures/dummy_vr_result.json', 'r')
+            dummy_response = json.load(fd)
+            fd.close()
+            mock_get.return_value = dummy_response
+            data_frame_visual_recognition = self.tagger.process_images_visual_recognition('sample_images', store_results=False)
+            self.assertIsNotNone(data_frame_visual_recognition)
+            self.assertEqual(25, len(data_frame_visual_recognition.index))
+
+        merged_df = pandas.concat([data_frame_imagga,
+                                   data_frame_google,
+                                   data_frame_clarifai,
+                                   data_frame_visual_recognition],
+                                  axis=1)
+        self.assertEqual(4, len(merged_df.columns))
+        self.assertEqual(25, len(merged_df.index))
 
 if __name__ == "__main__":
     unittest.main()

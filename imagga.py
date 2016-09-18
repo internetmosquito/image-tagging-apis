@@ -21,7 +21,7 @@ class ImaggaHelper(object):
     def __init__(self):
         self.auth = None
         self.configured = False
-        self.api = ['Imagga']
+        self.apis = ['VisualRecognition', 'Clarifai', 'Imagga', 'GoogleVision']
         self.images_names = list()
 
     def configure_imagga_helper(self, config_file):
@@ -144,7 +144,7 @@ class ImaggaHelper(object):
         Iterates over the images found in the specified path and calls Imagga API for each image
         :param folder_path: The full path of the folder to extract and process images from
         :param verbose: If true it includes the origin of the tagging procedure
-        :return: The JSON response from the tagging call
+        :return: The JSON string response from the tagging call
         """
         results = {}
         # Check if specified folder exists
@@ -185,13 +185,13 @@ class ImaggaHelper(object):
                 # Generate a dict with a list of tuples with all tags found per image
                 intermediate_results = dict()
                 try:
-                    intermediate_results = self.tag_folder(folder_path=folder_name)
+                    intermediate_results = json.loads(self.tag_folder(folder_path=folder_name))
                 except:
                     print('Could process any image from specified folder using Imagga API')
                     return None
 
                 imagga_results = dict()
-                for image_name, contents in sorted(intermediate_results.iteritems()):
+                for image_name, contents in intermediate_results.iteritems():
                     tags_found = []
                     self.images_names.append(image_name)
                     if 'results' in contents.keys():
@@ -207,8 +207,9 @@ class ImaggaHelper(object):
                                     imagga_results[image_name] = tags_found
             except Exception as ex:
                 print ('COULD NOT LOAD, reason {0}'.format(str(ex)))
-            data_series = pandas.Series(imagga_results, index=self.images_names, name='Imagga')
-            data_frame = pandas.DataFrame(data_series, index=self.images_names, columns=self.api)
+            sorted_names = sorted(self.images_names)
+            data_series = pandas.Series(imagga_results, index=sorted_names, name='Imagga')
+            data_frame = pandas.DataFrame(data_series, index=sorted_names, columns=['Imagga'])
             return data_frame
 
         return data_frame
